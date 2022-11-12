@@ -1,21 +1,22 @@
 // Programmer: Sukhnain Deol
-// Date: 10/11/22
+// Date: 11/15/22
 // Class: Computer Science 141
-// Assignment: Calendar Part 2
+// Assignment: Calendar Part 3
 
 // Program Function:
-  // Asks the user to input one of the menu options. Either to make a calendar with an inputted date, 
-  // open todays date, quit, or go to previous or next month, or change the size of the calendar.
-  // The months will have the correct days on the calendar according to the current year.
+    //
 
 // Extra credit: 
-  // I made sure the program would not crash on an incorrect date input
-  // I created an 's' input for the menu to customize the size of the calendar
+    //
 
-// Problems:
-  // I couldn't create a viable solution to altering the ASCII car size depending on the chosen calendar size 
-  // calendar only works for the current year 
+// Bugs/Problems:
+    //
 
+// To-Do
+    //
+
+// Done
+    // 
 
 
   import java.util.Calendar; // used for functions that need to access specific calendar information
