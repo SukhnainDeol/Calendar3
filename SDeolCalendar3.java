@@ -7,13 +7,24 @@
     //
 
 // Extra credit: 
-    //
+    // I added the 'ce' option to allow users to choose a file to pull events from
 
 // Bugs/Problems:
     //
 
 // To-Do
-    //
+    // create events array input
+        // create jagged array for full year
+        // create event input
+        // ask if events need to be shortened or have limit for length
+        // implement print event into date boxes
+        // format of creating event (“MM/DD event_title”)
+    // make calendar pull  event file before printing
+        // allow user to set a file to pull events from
+        // format of importing (“MM/DD event_title”)
+    // allow user to export calendar into inputted file
+        // make sure file is closed once finish printed
+
 
 // Done
     // 
@@ -27,13 +38,12 @@
   {
     public static void main(String[] args)
     {
-        String[][] eventArr = new String[12][31];
-
         Scanner in = new Scanner(System.in); // creates scanner object to access inputs
 
         LocalDate date = LocalDate.now();// java.date.LocalDate library creates calendar object
 
         String dateInput = "00/00"; // input of date storage (placeholder value)
+        String[][] eventArr = new String[12][32]; // holds events for each day of the year
         
         int inputDay = 0; // holds input of user for day
         int inputMonth = 0; // holds input of user for month
@@ -45,7 +55,6 @@
         boolean calendarIsOpen = false; // check if calendar is open before being able to quit or go next/previous
         boolean calendarInUse = true; // turns off calendar loop when 'q' is inputted in menu
         boolean correctMenuInput = true; // keeps asking for menu input until valid one is given
-        boolean realDateInputted = false; // used to check if user gives a real date on a calendar
         boolean isLeapYear;  // lets program know if to calculate based on a leap year 
         boolean isSizeChosen = false; // checks if need to ask user for calendar size first time
   
@@ -67,6 +76,9 @@
             System.out.println("'n' to display next month");
             System.out.println("'p' to display previous month");
             System.out.println("'s' to change calendar size");
+            System.out.println("'ev' to add an event to a date");
+            System.out.println("'fp' to print a calendar month to a file");
+            System.out.println("'ce' to choose an event file to pull from");
             System.out.println("'q' to quit the program");
         
             String menuInput = in.next().toLowerCase(); // takes in next token inputted in lower case
@@ -76,22 +88,9 @@
             {
             case "e": // user enters a date to print
 
-                realDateInputted = false; 
-                // repeatedly asks for input until valid one is given
-                while(realDateInputted == false)
-                {
-                    // asks for date input and stores (mm/dd)
-                    System.out.println("Please Enter a Date (mm/dd): ");
-                    dateInput = in.nextLine(); // takes in mm/dd input
+                dateInput = askForDateinput(isLeapYear, in); // asks user for input date
 
-                    // checks if input is formatted correclty and that the date is real
-                    if (dateInput.length() == 5 && dateInput.charAt(2) == '/' && isRealDate(dateInput, isLeapYear, in)) 
-                        {realDateInputted = true;} // ends loop
-                    else
-                        {System.out.println("\nERROR: Invalid Input\n");}
-                }
-
-                // seperates input into month and day
+                // seperates input into month and day and converts to int
                 inputDay = dayFromDate(dateInput);
                 inputMonth = monthFromDate(dateInput);
 
@@ -155,11 +154,6 @@
                 }
 
                 break;
-            default:
-                System.out.println("\nERROR: Invalid Input\n");
-                correctMenuInput = false;
-                
-                break;
             case "s":
                 if (calendarIsOpen) // if calendar is open
                 {
@@ -173,7 +167,18 @@
                 correctMenuInput = false; // restarts loop to ask for input of what to print
 
                 break;
+            case "ev":
+                dateInput = askForDateinput(isLeapYear, in);
+
+
+                
+            default:
+                System.out.println("\nERROR: Invalid Input\n");
+                correctMenuInput = false;
+                
+                break;
             }
+
         } while (correctMenuInput == false); // end of menu do-while
         
 
@@ -204,8 +209,26 @@
     }// end of main method
 
 
+    // prompts user to input a date, checks to make sure it is a real date 
+    public static String askForDateinput(boolean isLeapYear, Scanner in)
+    {
+        boolean realDateInputted = false; // used to check if user gives a real date on a calendar
+        String dateInput =""; // holds date input from user;
+        // repeatedly asks for input until valid one is given
+        while(realDateInputted == false)
+        {
+            // asks for date input and stores (mm/dd)
+            System.out.println("Please Enter a Date (mm/dd): ");
+            dateInput = in.nextLine(); // takes in mm/dd input
 
-
+            // checks if input is formatted correclty and that the date is real
+            if (dateInput.length() == 5 && dateInput.charAt(2) == '/' && isRealDate(dateInput, isLeapYear, in)) 
+                {realDateInputted = true;} // ends loop
+            else
+                {System.out.println("\nERROR: Invalid Input\n");}
+        }
+        return dateInput;
+    }
     public static boolean isRealDate(String dateInput, boolean isLeapYear, Scanner in)
     {
 
