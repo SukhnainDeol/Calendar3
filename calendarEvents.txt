@@ -9,3 +9,4 @@
 11/24 Thanksgiving
 12/24 Xmas_Eve
 12/25 Xmas_day
+12/31 NYD_eve
