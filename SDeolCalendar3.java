@@ -23,8 +23,7 @@
 // To-Do
     // comments
     // maybe make events multi-line??
-    // print to file not working correctly
-    // test adding event to end of each month
+    // test adding event to end of each month (calendar size calc for max characters)
 
 
 // Done
@@ -167,7 +166,7 @@
 
                     break;
                 case "ev": // add event to calendar
-                    System.out.println("Please enter  date and event (mm/dd event_title) (Under 13 character):");
+                    System.out.println("Please enter  date and event (mm/dd event_title) (Under "+ (calendarSize+2)+ " characters):");
                     eventInputted = in.nextLine(); 
                     if (eventInputted.length() > 18) // 42 accounts for mm/dd and spaces
                         {System.out.println("\nERROR: Event title is too long. Please try again.\n");}
@@ -186,6 +185,7 @@
                     inputMonth = askForMonthInput(isLeapYear, in); // takes in month to print
                     System.out.println("Please enter a file name to print to:"); // asks for file 
                     calendarOut = new PrintStream(in.next()); // takes in next token as file
+                    monthLength = findMonthLength(inputMonth); // determines length of month
 
                     printCalendarToFile(carLocation, calendarSize, date, monthLength, inputMonth, eventArr, calendarOut);
 
@@ -346,7 +346,6 @@
 
 
 
-
     // prints a given number of a given character
     public static void addChar(String addChar, int amount, PrintStream calendarOut)
     {
@@ -404,8 +403,7 @@
         int boxDayNum = 0-monthStartDay+1 + 7*(row-1);
         boolean indicatorPrinted = false; // used to check if indicator has been printed
 
-        int printedDay = 0;
-
+        int printedDay;
 
         // prints top layer of row
         for(int k = (row * 7 - 6); k <= 7*row; k++)
@@ -445,11 +443,11 @@
                         addChar(" ", boxLength/2 + ((size-1) % 2));
                         indicatorPrinted = true; // makes sure indicator is only printed once
                     }
-                    // adds event
+                    // adds event if on row after indicator, if there is space, and an event exists for the date
                     else if (rowsPrinted == 2 & rowsPrinted < boxHeight & eventArr[month-1][boxDayNum-1] != null) 
                     {
-                        String printedEvent = eventArr[month-1][boxDayNum-1];
-                        double eventSpacing = (boxLength - printedEvent.length())/2;
+                        String printedEvent = eventArr[month-1][boxDayNum-1]; // stores event
+                        double eventSpacing = (boxLength - printedEvent.length())/2; // calcs spacing between event and box
                         addChar(" ", (int)Math.floor(eventSpacing));
                         System.out.print(printedEvent.replace("_", " "));
                         if (printedEvent.length() % 2 != 0) // prevents mis alignment
@@ -459,6 +457,7 @@
                     }
                     else // if no event or indicator to be added
                         {addChar(" ",boxLength);}
+                    
                 }
                 catch (ArrayIndexOutOfBoundsException e) // defaults to adding spaces if error
                     {addChar(" ",boxLength);}
@@ -598,7 +597,7 @@
         
         int boxDayNum = 0-monthStartDay+1 + 7*(row-1);
 
-        int printedDay = 0; // keeps track of what day is to be printed
+        int printedDay; // keeps track of what day is to be printed
 
         // prints top layer of row
         for(int k = (row * 7 - 6); k <= 7*row; k++)
@@ -618,7 +617,6 @@
                 {addChar(" ", boxLength-1, calendarOut);} // single digit
             else
                 {addChar(" ", boxLength-2, calendarOut);}  // double digit (removes one space)
-
         }
 
         calendarOut.println("|"); // prints end of calendar and goes to next line
@@ -630,6 +628,7 @@
                 calendarOut.print("|");
                 boxDayNum++;
                 try { // catches any array index issues
+                    // prints events
                     if (rowsPrinted == 2 & rowsPrinted < boxHeight & eventArr[month-1][boxDayNum-1] != null) 
                     {
                         String printedEvent = eventArr[month-1][boxDayNum-1]; // assign event to var
@@ -655,7 +654,6 @@
 
             rowsPrinted++;
         }
-
         // prints bottom border of equal signs 
         addChar("=", rowLength, calendarOut);
 
