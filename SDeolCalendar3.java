@@ -9,77 +9,67 @@
         // t to print today's date and the current month in calendar form
         // p to go to previous month calendar
         // n to go to next month calendar
-        // ev to add an event to the calendar
+        // ev to add an event to the calendar (that will fit in a line of the calendar)
         // fp to print the calendar to a file
         // q to quit the program
-
 
 // Extra credit: 
     // none
 
 // Bugs/Problems:
-    //
-
-// To-Do
-    // comments
-    // maybe make events multi-line??
-    // test adding event to end of each month (calendar size calc for max characters)
-
-
-// Done
-    // make date indicator not interfere with events
-    // make calendar pull  event file before printing
-    // create events array input
-    // create jagged array for full year
-    // create event input
-        // format of creating/importing events (“MM/DD event_title”)
-    // implement print event into date boxes
-    // allowz user to enter a date and event to add to the calendar
-    // allow user to export calendar into inputted file
-        // make sure file is closed once finish printed
-        // make it so input only inputs month, no day indicator
+    // none
 
 
   import java.util.Calendar; // used for functions that need to access specific calendar information
   import java.time.LocalDate; // used to access current dates for calendar
   import java.util.Scanner; // allows access to user input
-  import java.io.File;
-  import java.io.FileNotFoundException;
-  import java.io.PrintStream;
+  import java.io.File; // allows access to file class
+  import java.io.FileNotFoundException; // thrown in case user gives non-existent file
+  import java.io.PrintStream; // used to print to file
   
   public class SDeolCalendar3
   {
     public static void main(String[] args) throws FileNotFoundException
     {
         Scanner in = new Scanner(System.in); // creates scanner object to access inputs
-        Scanner eventIn = new Scanner(new File ("calendarEvents.txt")); // accesses file to pull events from
+        Scanner eventIn; // accesses file to pull events from
         PrintStream calendarOut = new PrintStream(new File ("output.txt")); // used to print calendaer out if user wishes (placeholder file)
+
+        File calendarEvents = new File("calendarEvents.txt"); // file that contains events to be added to calendar
 
         LocalDate date = LocalDate.now();// java.date.LocalDate library creates calendar object
 
-        String dateInput = "00/00"; // input of date storage (placeholder value)
-        String eventInputted = "My_Birthday"; // event storage (placeholder value)
+        String dateInput; // input of date storage 
+        String eventInputted; // event storage 
+        String menuInput; // stores what menu option user chooses
+        String event; // holds event from events.txt file
+        String[] eventLineArr; // holds event and date split into array
 
-        int inputDay = 0; // holds input of user for day
-        int inputMonth = 0; // holds input of user for month
-        int monthLength = 0; // hold the length of month (e.g. january is 31 days)
+        int inputDay = 0; // holds input of user's chosen day
+        int inputMonth = 0; // holds input of user's chosen month
+        int monthLength = 0; // hold the length of month (i.e. january is 31 days)
         final int calendarSize = 11; 
         int carLocation = ((7*(calendarSize +2))-40)/2; // used to determine where the car will be printed
-        int currentMonth = date.getMonthValue();
-        int currentDay = date.getDayOfMonth();
+        int currentMonth = date.getMonthValue(); // uses localdate library to access current month
+        int currentDay = date.getDayOfMonth(); // uses localdate library to access current day
+        int eventDay; // holds day of event
+        int eventMonth; // holds month of event
 
-        boolean calendarIsOpen = false; // check if calendar is open before being able to quit or go next/previous
+        boolean calendarIsOpen = false; // check if calendar is open before being able to "quit", "next", or "previous"
         boolean calendarInUse = true; // turns off calendar loop when 'q' is inputted in menu
         boolean isLeapYear = false;  // lets program know if to calculate based on a leap year
 
         // checks if its a leap year
-        if (date.getYear()% 4 == 0) // if leap year
-        {isLeapYear = true;}
+        if (date.getYear()% 4 == 0) 
+            {isLeapYear = true;}
 
         String[][] eventArr = new String[12][]; // jagged array that can hold events for each day of the year
         {
             eventArr[0] = new String[31]; // January
-            eventArr[1] = new String[28]; // February
+            if(isLeapYear) // if leap year feb has 29 days
+                {eventArr[1] = new String[29];} // February
+            else // else 28 days
+                {eventArr[1] = new String[28];} // February
             eventArr[2] = new String[31]; // March
             eventArr[3] = new String[30]; // April
             eventArr[4] = new String[31]; // May
@@ -92,15 +82,28 @@
             eventArr[11] = new String[31]; // December
         } 
 
-        while(eventIn.hasNextLine()) // pulls events from event file
+        if (calendarEvents.exists())
         {
-            String event = eventIn.nextLine(); // takes in line from event file
-            String[] eventLineArr = event.split(" "); // splits date and event into array
-            int eventDay = dayFromDate(eventLineArr[0]); // split date into day
-            int eventMonth = monthFromDate(eventLineArr[0]); // split date into month
-            String eventTitle = eventLineArr[1]; // assigns event title to string
-            eventArr[eventMonth-1][eventDay-1] = eventTitle; // adds event to date in array 
+            eventIn = new Scanner(calendarEvents); // assigns scanner to event file
+
+            while(eventIn.hasNextLine()) // pulls events from event file
+            {
+                event = eventIn.nextLine(); // takes in line from event file
+                // if date and event are split by a space
+                if(event.charAt(5) == ' ')
+                    {eventLineArr = event.split(" ");} // splits date and event into array elements
+                else    
+                    {continue;} // skips line
+                // checks if event is formatted correctly, fits in boxlength, and that the date is real
+                if(eventLineArr[1] == null | eventLineArr[1].length() > calendarSize+1 | isRealDate(eventLineArr[0], isLeapYear) == false) 
+                    {continue;} // skips line
+                eventDay = dayFromDate(eventLineArr[0]); // translates date into day
+                eventMonth = monthFromDate(eventLineArr[0]); // translates date into month
+                eventArr[eventMonth-1][eventDay-1] = eventLineArr[1]; // adds event to date in array 
+            }
+            eventIn.close(); // closes scanner to prevent resource leaks
         }
+        
 
         // start of menu loop
         do {
@@ -113,17 +116,16 @@
             System.out.println("'fp' to print a calendar month to a file");
             System.out.println("'q' to quit the program");
         
-            String menuInput = in.next().toLowerCase(); // takes in next token inputted in lower case
+            menuInput = in.next().toLowerCase(); // takes in next token inputted in lower case
             in.nextLine(); // clears inputs
 
             switch(menuInput) 
             {
                 case "e": // user enters a date to print
-                    dateInput = askForDateinput(isLeapYear, in); // asks user for input date
+                    dateInput = askForDateInput(isLeapYear, in); // asks user for input date
                     inputMonth = monthFromDate(dateInput); // splits date into month
                     inputDay = dayFromDate(dateInput); // splits date into day
                     monthLength = findMonthLength(inputMonth); // determines length of month
-                    // Print Inputted Month Calendar 
                     printCalendar(carLocation, calendarSize, date, monthLength, inputMonth, inputDay, eventArr);                    
                     calendarIsOpen = true; // states calendar is opened 
 
@@ -132,69 +134,58 @@
                     inputMonth = currentMonth; // splits date into month
                     inputDay = currentDay; // splits date into day
                     monthLength = findMonthLength(inputMonth); // determines length of month
-                    // Print Inputted Month Calendar 
                     printCalendar(carLocation, calendarSize, date, monthLength, inputMonth, inputDay, eventArr);       
                     calendarIsOpen = true; // states calendar is opened 
 
                     break;
-                case "n": // print next month
+                case "n": // prints next month if calendar is open
                     if (calendarIsOpen) // if calendar is open
                     {
-                        if(inputMonth < 12) // if calendar is less than 12 add 1
-                            {inputMonth++;}
-                        else
-                            {inputMonth = 1;} // calendar is 12 or higher, go to month 1
-                        monthLength = findMonthLength(inputMonth);// changes calendar length to fit month
+                        if(inputMonth == 12) // if month is 12, go to month 1
+                            {inputMonth = 1;}
+                        else                // if month is less than 12, add 1
+                            {inputMonth++;} 
+                        monthLength = findMonthLength(inputMonth); // changes calendar length to fit month
                         printCalendar(carLocation, calendarSize, date, monthLength, inputMonth, inputDay, eventArr);                    
                     }
                     else  // if calendar isnt open
                         {System.out.println("\nERROR: Please open the calendar before changing it.\n");}
 
                     break;
-                case "p": // print previous month
-                    if (calendarIsOpen) // if calendar is open
+                case "p": // print previous month if calendar is open
+                    if (calendarIsOpen) // if calendar is open11
                     {
                         if(inputMonth == 1) // if month is 1, goes back to 12
                             {inputMonth = 12;}
-                        else // else go back one month
+                        else                 // else go back one month
                             {inputMonth--;}
-                        monthLength = findMonthLength(inputMonth);// changes calendar length to fit month
+                        monthLength = findMonthLength(inputMonth); // changes calendar length to fit month
                         printCalendar(carLocation, calendarSize, date, monthLength, inputMonth, inputDay, eventArr);                    
                     }
                     else // if calendar isnt open
                         {System.out.println("\nERROR: Please open the calendar before changing it.\n");}
 
                     break;
-                case "ev": // add event to calendar
-                    System.out.println("Please enter  date and event (mm/dd event_title) (Under "+ (calendarSize+2)+ " characters):");
-                    eventInputted = in.nextLine(); 
-                    if (eventInputted.length() > 18) // 42 accounts for mm/dd and spaces
-                        {System.out.println("\nERROR: Event title is too long. Please try again.\n");}
-                    else if (eventInputted.replace(" ", "").length() < 6) // if no event is added
-                        {System.out.println("\nERROR: No event was added. Please try again.\n");}
-                    else
-                    {
-                        inputDay = dayFromDate(eventInputted); // gets day from input
-                        inputMonth = monthFromDate(eventInputted); // gets month from input
-                        eventArr[inputMonth-1][inputDay-1] = eventInputted.substring(6); // adds event to array
-                        System.out.println("\nSuccess! '" + eventArr[inputMonth-1][inputDay-1] + "' event added to " + eventInputted.substring(0,5) + "\n");
-                    }
-                        
+                case "ev": // add event to calendar 
+                    eventInputted = askForEventInput(isLeapYear, in, calendarSize); // gets event input (mm/dd event_title)
+                    inputDay = dayFromDate(eventInputted); // gets day from input
+                    inputMonth = monthFromDate(eventInputted); // gets month from input
+                    eventArr[inputMonth-1][inputDay-1] = eventInputted.replace(" ", "").substring(5); // adds event to array
+                    System.out.println("\nSuccess! '" + eventArr[inputMonth-1][inputDay-1] + "' event added to " + eventInputted.substring(0,5) + "\n");
+                    
                     break;
                 case "fp": // prints calendar to inputted file
                     inputMonth = askForMonthInput(isLeapYear, in); // takes in month to print
                     System.out.println("Please enter a file name to print to:"); // asks for file 
                     calendarOut = new PrintStream(in.next()); // takes in next token as file
                     monthLength = findMonthLength(inputMonth); // determines length of month
-
                     printCalendarToFile(carLocation, calendarSize, date, monthLength, inputMonth, eventArr, calendarOut);
-
                     System.out.println("\nSuccess! Calendar printed to file.\n");
 
                     calendarOut.close(); // closes file
 
                     break;
-                case "q": // quit
+                case "q": // quit if calendar is open
                     if (calendarIsOpen) // if calendar is open
                         {calendarInUse = false;} // marks calendar to be closed
                     else  // if calendar isnt  open
@@ -209,7 +200,6 @@
         } while (calendarInUse); // end of menu do-while
 
         in.close(); // closes scanner to prevent resource leaks
-        eventIn.close(); // closes scanner to prevent resource leaks
         calendarOut.close(); // closes printstream to prevent resource leaks
     }// end of main method
 
@@ -217,7 +207,7 @@
 
 
     // prompts user to input a date, checks to make sure it is a real date 
-    public static String askForDateinput(boolean isLeapYear, Scanner in)
+    public static String askForDateInput(boolean isLeapYear, Scanner in)
     {
         boolean realDateInputted = false; // used to check if user gives a real date on a calendar
         String dateInput =""; // holds date input from user;
@@ -226,10 +216,10 @@
         {
             // asks for date input and stores (mm/dd)
             System.out.println("Please Enter a Date (mm/dd): ");
-            dateInput = in.nextLine(); // takes in mm/dd input
+            dateInput = in.next(); // takes in mm/dd input
 
             // checks if input is formatted correclty and that the date is real
-            if (dateInput.length() == 5 && dateInput.charAt(2) == '/' && isRealDate(dateInput, isLeapYear, in)) 
+            if (dateInput.length() == 5 & dateInput.charAt(2) == '/' & isRealDate(dateInput, isLeapYear)) 
                 {realDateInputted = true;} // ends loop
             else
                 {System.out.println("\nERROR: Invalid Input\n");}
@@ -249,11 +239,12 @@
         while(realDateInputted == false)
         {
             System.out.println("Please Enter a Month (mm): ");
-            monthInput = in.nextLine(); // takes in mm/dd input
-            try // checks if input is an int
+            monthInput = in.nextLine().replace(" ", ""); 
+            // checks if input is an int
+            try 
             {
                 monthInt = Integer.parseInt(monthInput); // converts input to int
-                if (monthInt > 0 && monthInt < 13) // checks if input is between 1 and 12
+                if (monthInt > 0 & monthInt < 13) // checks if input is between 1 and 12
                     {realDateInputted = true;} // ends loop
                 else
                     {System.out.println("\nERROR: Invalid Input\n");}
@@ -266,13 +257,60 @@
 
 
 
+
+    // prompts user to input a date and event, checks to make sure it is a real date 
+    public static String askForEventInput(boolean isLeapYear, Scanner in, final int calendarSize) 
+    {
+        boolean realDateInputted = false; // used to check if user gives a real date on a calendar
+        String dateInput =""; // holds date input from user
+        String date;
+        String event;
+        // repeatedly asks for input until valid one is given
+        while(realDateInputted == false)
+        {
+            try 
+            {
+                // calendar size +2 is 1 over the length of a box in the calendar
+                System.out.println("Please enter  date and event (mm/dd event_title) (Under " + (calendarSize+2) + " characters):");
+                dateInput = in.nextLine(); // takes in mm/dd input and removes spaces
+                if(dateInput.charAt(5) == ' ') // if there is a space after the date
+                {
+                    dateInput = dateInput.replace(" ", ""); // removes space
+
+                    // 6 accounts for date (mm/dd) and min length of event at 1, calendar size 1 is length of calendar box
+                    if(dateInput.length() >= 6 & dateInput.length() <= calendarSize+7)
+                    {
+                        date = dateInput.substring(0,5); // gets date from input
+                        event = dateInput.substring(5); // gets event from input
+                        // checks if input is formatted correclty, that the date is real, the event is not too long, and that an event was added
+                        if (isRealDate(date, isLeapYear) & event.length() <= calendarSize+1 & event.length() > 0)
+                            {realDateInputted = true;} // ends loop
+                        else
+                            {System.out.println("\nERROR: Invalid Input\n");}
+                    }
+                    else
+                        {System.out.println("\nERROR: Event Length Incorrect \n");}
+                }
+                else
+                    {System.out.println("\nERROR: Invalid Input\n");}
+            }
+            catch (StringIndexOutOfBoundsException e) // for other input errors
+                {System.out.println("\nERROR: Invalid Input\n");}
+        }
+        return dateInput;
+    } // end of askForDateinput method
+
+
+
     // checks if date is real
-    public static boolean isRealDate(String dateInput, boolean isLeapYear, Scanner in)
+    public static boolean isRealDate(String dateInput, boolean isLeapYear)
     {
 
         // tries following code, prints error if doesnt work
         try 
         {
+            if(dateInput.charAt(2) != '/')
+                {return false;}
             // checks if input is a real date on the calendar
             switch (monthFromDate(dateInput))
             { 
@@ -285,7 +323,7 @@
                 case 10:
                 case 12:
                 // if day is between or equal to 1-31
-                if (dayFromDate(dateInput) <=31 && dayFromDate(dateInput) >= 1)
+                if (dayFromDate(dateInput) <=31 & dayFromDate(dateInput) >= 1)
                     {return true;}
                 else 
                     {return false;}
@@ -296,7 +334,7 @@
                 case 9:
                 case 11:
                 // if day is between or equal to 1-30
-                if (dayFromDate(dateInput) <= 30 && dayFromDate(dateInput) >= 1)
+                if (dayFromDate(dateInput) <= 30 & dayFromDate(dateInput) >= 1)
                     {return true;}
                 else 
                     {return false;}
@@ -304,9 +342,9 @@
                 // month with 29 days
                 case 2:
                 // if day is between or equal to 1-29 and leap year
-                if (isLeapYear && dayFromDate(dateInput) <= 29 && dayFromDate(dateInput) >= 1 )
+                if (isLeapYear & dayFromDate(dateInput) <= 29 & dayFromDate(dateInput) >= 1 )
                     {return true;} 
-                else if (isLeapYear == false && dayFromDate(dateInput) <= 28 && dayFromDate(dateInput) >= 1 )
+                else if (isLeapYear == false & dayFromDate(dateInput) <= 28 & dayFromDate(dateInput) >= 1 )
                     {return true;}
                 else 
                     {return false;}
@@ -327,10 +365,28 @@
     // uses inputted month to find length of month
     public static int findMonthLength(int month)
     {
-        Calendar calendar = Calendar.getInstance(); // creates calendar object
-        calendar.set(Calendar.MONTH, month -1); // months in this function are from 0-11
+        // calendar library returning 31 for length of feburary
+        // to fix this, I hard coded the length of feburary
 
-        int monthLength = calendar.getActualMaximum(Calendar.DATE); // gets max number of days in month field of calendar
+        LocalDate date = LocalDate.now();// java.date.LocalDate library creates calendar object
+        boolean isLeapYear = false; // default value
+        if (date.getYear()% 4 == 0)  // sets to true otherwise
+            {isLeapYear = true;}
+        int monthLength = 30; // placeholder value
+        if(month != 2)
+        {
+            Calendar calendar = Calendar.getInstance(); // creates calendar object
+            calendar.set(Calendar.MONTH, month -1); // months in this function are from 0-11
+
+            monthLength = calendar.getActualMaximum(Calendar.DATE); // gets max number of days in month field of calendar
+        }
+        else
+        {
+            if(isLeapYear)
+                {monthLength = 29;}
+            else
+                {monthLength = 28;}
+        }
 
         return monthLength;
     } // end of findMonthLength
@@ -412,7 +468,7 @@
 
             System.out.print("|"); // end of square
 
-            if (printedDay <= monthLength && k >= monthStartDay)
+            if (printedDay <= monthLength & k >= monthStartDay)
                 {System.out.print(printedDay);} // print date
             else if (k < monthStartDay)
                 {System.out.print(" ");}
@@ -606,7 +662,7 @@
 
             calendarOut.print("|"); // end of square
 
-            if (printedDay <= monthLength && k >= monthStartDay)
+            if (printedDay <= monthLength & k >= monthStartDay)
                 {calendarOut.print(printedDay);} // print date
             else if (k < monthStartDay)
                 {calendarOut.print(" ");}

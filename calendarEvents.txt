@@ -1,6 +1,7 @@
 01/01 NYD
 01/16 MLKDay
 02/20 Pres_Day
+04/01 April_Fools
 05/29 Memor_Day
 07/04 Independ_Day
 09/05 Labor_Day
